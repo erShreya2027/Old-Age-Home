@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Guardians</title>
+  <link rel="stylesheet" href="manager.css" />
+  <style>
+    form {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    form input {
+      margin: 5px;
+      padding: 8px;
+      width: 200px;
+    }
+    #message {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>👨‍👩‍👧‍👦 All Guardians</h1>
+  </header>
+
+  <section>
+    <input type="text" id="searchInput" placeholder="Enter Guardian ID" />
+    <button onclick="searchGuardian()">Search</button>
+    <!-- Update Guardian Form -->
+  <h2>Update Guardian Information</h2>
+  <form id="updateGuardianForm">
+    <input type="number" id="guardian_id" placeholder="Guardian ID" required />
+    <input type="text" id="guardian_name" placeholder="Name" required />
+    <input type="text" id="relation" placeholder="Relation" required />
+    <input type="text" id="guardian_contactNo" placeholder="Contact Number" required />
+    <input type="text" id="guardian_address" placeholder="Address" required />
+    <input type="text" id="guardian_username" placeholder="Username" required />
+    <input type="text" id="guardian_password" placeholder="Password" required />
+    <button type="submit">Update Guardian</button>
+    <div id="message"></div>
+  </form>
+  
+    <ul id="guardianList"></ul>
+  </section>
+
+  
+
+  <script>
+    let allGuardians = [];
+
+    function renderGuardians(guardians) {
+      const guardianList = document.getElementById('guardianList');
+      guardianList.innerHTML = '';
+
+      guardians.forEach(guardian => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>Guardian ID:</strong> ${guardian.guardian_id} <br>
+          <strong>Name:</strong> ${guardian.guardian_name} <br>
+          <strong>Relation:</strong> ${guardian.relation} <br>
+          <strong>Contact Number:</strong> ${guardian.guardian_contactNo} <br>
+          <strong>Address:</strong> ${guardian.guardian_address} <br>
+          <strong>Username:</strong> ${guardian.guardian_username} <br>
+          <strong>Password:</strong> ${guardian.guardian_password} <br>
+          <hr>
+        `;
+        guardianList.appendChild(listItem);
+      });
+    }
+
+    function searchGuardian() {
+      const searchId = document.getElementById('searchInput').value.trim();
+      if (searchId === '') {
+        renderGuardians(allGuardians);
+        return;
+      }
+
+      const match = allGuardians.find(g => g.guardian_id == searchId);
+      if (match) {
+        const others = allGuardians.filter(g => g.guardian_id != searchId);
+        renderGuardians([match, ...others]);
+      } else {
+        renderGuardians([]);
+        document.getElementById('guardianList').innerHTML = '<li>No guardian found with that ID.</li>';
+      }
+    }
+
+    // Fetch guardians from backend
+    fetch('http://localhost:3000/api/manager/guardians')
+      .then(response => response.json())
+      .then(data => {
+        allGuardians = data;
+        renderGuardians(allGuardians);
+      })
+      .catch(error => {
+        console.error('Error fetching guardians:', error);
+      });
+
+    // Update guardian
+    document.getElementById('updateGuardianForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('guardian_id').value;
+      const data = {
+        guardian_name: document.getElementById('guardian_name').value,
+        relation: document.getElementById('relation').value,
+        guardian_contactNo: document.getElementById('guardian_contactNo').value,
+        guardian_address: document.getElementById('guardian_address').value,
+        guardian_username: document.getElementById('guardian_username').value,
+        guardian_password: document.getElementById('guardian_password').value
+      };
+
+      const res = await fetch(`http://localhost:3000/api/manager/guardians/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      document.getElementById('message').textContent = result.message;
+
+      if (result.success) {
+        // Refresh guardian list
+        fetch('http://localhost:3000/api/manager/guardians')
+          .then(response => response.json())
+          .then(data => {
+            allGuardians = data;
+            renderGuardians(allGuardians);
+          });
+      }
+    });
+  </script>
+</body>
+</html>

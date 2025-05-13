@@ -1,0 +1,173 @@
+<body>
+  <header>
+    <h1>👵 All Residents</h1>
+    <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Residents</title>
+  <link rel="stylesheet" href="manager.css" />
+  </header>
+
+  <!-- 🔍 Search Bar -->
+  <div id="searchBar">
+    <input type="number" id="searchInput" placeholder="Enter Resident ID" />
+    <button onclick="searchResident()">Search</button>
+  </div>
+
+  <!-- ✏️ Update Form -->
+ <!-- ✏️ Update Form -->
+<div style="margin: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+  <h3>Update Resident Information</h3>
+  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Resident ID:</label>
+      <input type="number" id="updateId" required />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Name:</label>
+      <input type="text" id="updateName" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Gender:</label>
+      <input type="text" id="updateGender" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Age:</label>
+      <input type="number" id="updateAge" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Admission Date:</label>
+      <input type="date" id="updateDate" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Caretaker ID:</label>
+      <input type="number" id="updateCaretakerId" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Username:</label>
+      <input type="text" id="updateUsername" />
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <label>Password:</label>
+      <input type="text" id="updatePassword" />
+    </div>
+
+  </div>
+
+  <br />
+  <button onclick="updateResident()">Update Resident</button>
+  <p id="updateMsg" style="color: red; margin-top: 10px;"></p>
+</div>
+
+  <section>
+    <ul id="residentList"></ul>
+  </section>
+
+  <script>
+    let allResidents = [];
+
+    fetch('http://localhost:3000/api/manager/residents')
+      .then(response => response.json())
+      .then(data => {
+        allResidents = data;
+        displayResidents(data);
+      })
+      .catch(error => {
+        console.error('Error fetching residents:', error);
+      });
+
+    function displayResidents(residents, highlightId = null) {
+      const residentList = document.getElementById('residentList');
+      residentList.innerHTML = "";
+
+      residents.forEach(resident => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>Resident ID:</strong> ${resident.resident_id} <br>
+          <strong>Name:</strong> ${resident.resident_name} <br>
+          <strong>Gender:</strong> ${resident.resident_gender} <br>
+          <strong>Age:</strong> ${resident.resident_age} <br>
+          <strong>Admission Date:</strong> ${new Date(resident.admission_date).toLocaleDateString()} <br>
+          <strong>Caretaker ID:</strong> ${resident.caretaker_id} <br>
+          <strong>Username:</strong> ${resident.resident_username} <br>
+          <strong>Password:</strong> ${resident.resident_password} <br>
+          <hr>
+        `;
+
+        if (highlightId && resident.resident_id === highlightId) {
+          listItem.classList.add("highlight");
+          residentList.insertBefore(listItem, residentList.firstChild);
+        } else {
+          residentList.appendChild(listItem);
+        }
+      });
+    }
+
+    function searchResident() {
+      const searchId = parseInt(document.getElementById("searchInput").value);
+      if (!searchId) return;
+
+      const matched = allResidents.filter(res => res.resident_id === searchId);
+      const others = allResidents.filter(res => res.resident_id !== searchId);
+      displayResidents([...matched, ...others], searchId);
+    }
+
+    async function updateResident() {
+      const id = parseInt(document.getElementById('updateId').value);
+      const name = document.getElementById('updateName').value;
+      const gender = document.getElementById('updateGender').value;
+      const age = parseInt(document.getElementById('updateAge').value);
+      const admissionDate = document.getElementById('updateDate').value;
+      const caretakerId = parseInt(document.getElementById('updateCaretakerId').value);
+      const username = document.getElementById('updateUsername').value;
+      const password = document.getElementById('updatePassword').value;
+
+      const updateMsg = document.getElementById('updateMsg');
+
+      const residentExists = allResidents.some(res => res.resident_id === id);
+      if (!residentExists) {
+        updateMsg.textContent = "Resident ID not found!";
+        return;
+      }
+
+      const updatedData = {
+        resident_id: id,
+        resident_name: name,
+        resident_gender: gender,
+        resident_age: age,
+        admission_date: admissionDate,
+        caretaker_id: caretakerId,
+        resident_username: username,
+        resident_password: password
+      };
+
+      const res = await fetch(`http://localhost:3000/api/manager/residents/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      });
+
+      if (res.ok) {
+        updateMsg.style.color = 'green';
+        updateMsg.textContent = "Resident updated successfully!";
+        // Refresh the data
+        const refreshed = await fetch('http://localhost:3000/api/manager/residents');
+        const data = await refreshed.json();
+        allResidents = data;
+        displayResidents(allResidents, id);
+      } else {
+        updateMsg.style.color = 'red';
+        updateMsg.textContent = "Error updating resident.";
+      }
+    }
+  </script>
+</body>

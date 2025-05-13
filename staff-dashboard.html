@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Staff Dashboard</title>
+  <link rel="stylesheet" href="staffstyle.css" />
+  <style>
+    /* Add your custom CSS here, or link to the CSS */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #5B9BD5;
+      padding: 1rem;
+      color: white;
+      text-align: center;
+    }
+
+    .dashboard-container {
+      padding: 20px;
+    }
+
+    h2 {
+      color: #5B9BD5;
+    }
+
+    .info-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section p {
+      font-size: 16px;
+    }
+
+    .info-section strong {
+      color: #4682B4;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
+
+  <div class="dashboard-container">
+    <section id="staff-info" class="info-section">
+      <h2>Your Staff Information</h2>
+      <p><strong>Name:</strong> <span id="staff_name">John Doe</span></p>
+      <p><strong>Role:</strong> <span id="staff_role">Nurse</span></p>
+      <p><strong>Salary:</strong> <span id="staff_salary">$3000</span></p>
+      <p><strong>Shift:</strong> <span id="staff_shift">Morning</span></p>
+      <p><strong>Gender:</strong> <span id="staff_gender">Male</span></p>
+    </section>
+
+    <hr />
+
+    
+  </div>
+
+  <script>
+    // Fetch staff data
+    fetch('/api/staff/info')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch staff info');
+        return res.json();
+      })
+      .then(data => {
+        // Debug log
+        console.log('Fetched staff data:', data);
+
+        // Set Staff Info
+        document.getElementById('staff_name').textContent = data.staff_name || 'N/A';
+        document.getElementById('staff_role').textContent = data.role || 'N/A';
+        document.getElementById('staff_salary').textContent = data.Staff_Salary || 'N/A';
+        document.getElementById('staff_shift').textContent = data.shift || 'N/A';
+        document.getElementById('staff_gender').textContent = data.Staff_gender || 'N/A';
+      })
+      .catch(err => {
+        console.error('Error fetching data:', err);
+        alert('Could not load staff details.');
+      });
+
+    // Handle feedback form
+    
+  </script>
+</body>
+</html>
+

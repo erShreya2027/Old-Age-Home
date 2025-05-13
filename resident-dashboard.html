@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resident Dashboard</title>
+  <link rel="stylesheet" href="residentstyle.css" />
+  <style>
+    /* Add your custom CSS here, or link to the CSS */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #5B9BD5;
+      padding: 1rem;
+      color: white;
+      text-align: center;
+    }
+
+    .dashboard-container {
+      padding: 20px;
+    }
+
+    h2 {
+      color: #5B9BD5;
+    }
+
+    .info-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section p {
+      font-size: 16px;
+    }
+
+    .info-section strong {
+      color: #4682B4;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
+
+  <div class="dashboard-container">
+    <section id="resident-info" class="info-section">
+      <h2>Your Information</h2>
+      <p><strong>Name:</strong> <span id="resident_name"></span></p>
+      <p><strong>Gender:</strong> <span id="resident_gender"></span></p>
+      <p><strong>Age:</strong> <span id="resident_age"></span></p>
+      <p><strong>Admission Date:</strong> <span id="admission_date"></span></p>
+    </section>
+
+    <section id="guardian-info" class="info-section">
+      <h2>Your Guardian's Information</h2>
+      <p><strong>Name:</strong> <span id="guardian_name"></span></p>
+      <p><strong>Relation:</strong> <span id="relation"></span></p>
+      <p><strong>Contact No:</strong> <span id="guardian_contactNo"></span></p>
+      <p><strong>Address:</strong> <span id="guardian_address"></span></p>
+    </section>
+
+    <section id="medical-records" class="info-section">
+      <h2>Your Medical Records</h2>
+      <ul id="medicalList"></ul>
+    </section>
+    
+    <hr />
+
+    
+  </div>
+
+  <script>
+    // Fetch resident and guardian data
+    fetch('/api/resident/info')
+    window.onload = function () {
+      fetchMedicalRecords();
+
+    fetch('/api/resident/info')
+    
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch resident info');
+        return res.json();
+      })
+      .then(data => {
+        // Debug log
+        console.log('Fetched resident + guardian data:', data);
+
+        // Set Resident Info
+        document.getElementById('resident_name').textContent = data.resident_name || 'N/A';
+        document.getElementById('resident_gender').textContent = data.resident_gender || 'N/A';
+        document.getElementById('resident_age').textContent = data.resident_age || 'N/A';
+        document.getElementById('admission_date').textContent = data.admission_date || 'N/A';
+
+        // Set Guardian Info
+        document.getElementById('guardian_name').textContent = data.guardian_name || 'N/A';
+        document.getElementById('relation').textContent = data.relation || 'N/A';
+        document.getElementById('guardian_contactNo').textContent = data.guardian_contactNo || 'N/A';
+        document.getElementById('guardian_address').textContent = data.guardian_address || 'N/A';
+      })
+      .catch(err => {
+        console.error('Error fetching data:', err);
+        alert('Could not load resident details.');
+      });
+  };
+    // Handle feedback form
+   
+    // Fetch and display medical records
+function fetchMedicalRecords() {
+  fetch('/api/resident/info/medical-records')
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to fetch medical records');
+      return res.json();
+    })
+    .then(records => {
+      const list = document.getElementById('medicalList');
+      list.innerHTML = '';
+
+      if (records.length === 0) {
+        list.innerHTML = '<li>No medical records found.</li>';
+        return;
+      }
+
+      records.forEach(record => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <p><strong>Resident ID:</strong> ${record.resident_id}</p>
+          <strong>Date:</strong> ${record.checkup_date} |
+          <strong>Diagnosis:</strong> ${record.diagnosis} |
+          <strong>Doctor ID:</strong> ${record.doctor_id}
+        `;
+        list.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching medical records:', err);
+      document.getElementById('medicalList').innerHTML = '<li>Error loading records.</li>';
+    });
+}
+
+
+  </script>
+
+  
+</body>
+</html>

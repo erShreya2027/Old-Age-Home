@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory Tracking</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <header>
+    <h1>📦 Inventory Tracking</h1>
+  </header>
+
+  <section>
+    <h2>All Inventory Items</h2>
+    <ul id="inventoryList"></ul>
+  </section>
+
+  <section>
+    <h2>Add New Item</h2>
+    <form id="addItemForm">
+      <input type="text" name="inventory_name" placeholder="Item Name" required />
+      <select name="category" required>
+        <option value="Food">Food</option>
+        <option value="Medicine">Medicine</option>
+        <option value="Cleaning Supplies">Cleaning Supplies</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Other">Other</option>
+      </select>
+      <input type="number" name="quantity" placeholder="Quantity" required />
+      <input type="number" name="manager_id" placeholder="Manager ID" required />
+      <button type="submit">Add Item</button>
+    </form>
+  </section>
+
+  <script>
+    // Fetch and display all inventory items
+    function fetchInventory() {
+      fetch('http://localhost:3000/api/manager/inventory')
+        .then(response => response.json())
+        .then(data => {
+          const inventoryList = document.getElementById('inventoryList');
+          inventoryList.innerHTML = '';
+          data.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+              <strong>Item ID:</strong> ${item.inventory_id} <br>
+              <strong>Item Name:</strong> ${item.inventory_name} <br>
+              <strong>Category:</strong> ${item.category} <br>
+              <strong>Quantity:</strong> ${item.quantity} <br>
+              <button onclick="deleteItem(${item.inventory_id})">Delete</button>
+              <button onclick="updateItem(${item.inventory_id})">Update</button>
+              <hr>
+            `;
+            inventoryList.appendChild(listItem);
+          });
+        })
+        .catch(error => console.error('Error fetching inventory:', error));
+    }
+
+    // Add a new inventory item
+    document.getElementById('addItemForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+
+      fetch('http://localhost:3000/api/manager/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          fetchInventory(); // Refresh list after adding
+          e.target.reset();
+        })
+        .catch(error => console.error('Error adding item:', error));
+    });
+
+    // Delete an inventory item
+    function deleteItem(itemId) {
+      fetch(`http://localhost:3000/api/manager/inventory/${itemId}`, {
+        method: 'DELETE',
+      })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          fetchInventory(); // Refresh list after deletion
+        })
+        .catch(error => console.error('Error deleting item:', error));
+    }
+
+    // Fetch and display inventory on page load
+    fetchInventory();
+
+    // This should already be present
+const data = Object.fromEntries(formData);
+
+// This is what it sends:
+console.log(data); // Check the browser console
+
+// Should print: 
+// { inventory_name: "Soap", category: "Cleaning Supplies", quantity: "10", manager_id: "1" }
+
+  </script>
+</body>
+</html>

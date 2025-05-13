@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medical Records Management</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <header>
+    <h1>🩺 Manage Medical Records</h1>
+  </header>
+
+  <section class="form-section">
+    <!-- Add Medical Record -->
+    <h2>Add Medical Record</h2>
+    <form id="addRecordForm">
+      <input type="number" name="record_id" placeholder="Record ID" required />
+      <input type="number" name="resident_id" placeholder="Resident ID" required />
+      <input type="text" name="diagnosis" placeholder="Diagnosis" required />
+      <input type="date" name="checkup_date" placeholder="Checkup Date" required />
+      <input type="number" name="doctor_id" placeholder="Doctor ID" required />
+      <button type="submit">Add Record</button>
+    </form>
+
+    <!-- Update Medical Record -->
+    <h2>Update Medical Record</h2>
+    <form id="updateRecordForm">
+      <input type="number" name="record_id" placeholder="Record ID (to update)" required />
+      <input type="number" name="resident_id" placeholder="Resident ID" required />
+      <input type="text" name="diagnosis" placeholder="Diagnosis" required />
+      <input type="date" name="checkup_date" placeholder="Checkup Date" required />
+      <input type="number" name="doctor_id" placeholder="Doctor ID" required />
+      <button type="submit">Update Record</button>
+    </form>
+
+    <!-- Delete Medical Record -->
+    <h2>Delete Medical Record</h2>
+    <form id="deleteRecordForm">
+      <input type="number" name="record_id" placeholder="Record ID to Delete" required />
+      <button type="submit">Delete</button>
+    </form>
+
+    <!-- View All Records -->
+    <h2>All Medical Records</h2>
+    <div id="medical-records"></div>
+  </section>
+
+  <script>
+    // Add Medical Record
+    document.getElementById('addRecordForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const recordData = {
+    record_id: formData.get('record_id'),
+    resident_id: formData.get('resident_id'),
+    diagnosis: formData.get('diagnosis'),
+    checkup_date: formData.get('checkup_date'),
+    doctor_id: formData.get('doctor_id')
+  };
+
+  fetch('/api/manager/medical-records', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(recordData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Record added:', data);
+    alert('Record added successfully');
+    location.reload();
+  })
+  .catch(error => {
+    console.error('Error adding record:', error);
+    alert('Error adding record');
+  });
+});
+
+
+    // Update Medical Record
+    document.getElementById('updateRecordForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const recordData = {
+        record_id: formData.get('record_id'),
+        resident_id: formData.get('resident_id'),
+        diagnosis: formData.get('diagnosis'),
+        checkup_date: formData.get('checkup_date'),
+        doctor_id: formData.get('doctor_id')
+      };
+
+      const record_id = formData.get('record_id');
+      fetch('/api/manager/medical-records/' + record_id,  {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(recordData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Record updated:', data);
+        alert('Record updated successfully');
+        location.reload(); // Reload to show updated list
+      })
+      .catch(error => {
+        console.error('Error updating record:', error);
+        alert('Error updating record');
+      });
+    });
+
+    // Delete Medical Record
+    // Delete Medical Record
+document.getElementById('deleteRecordForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const recordId = form.querySelector('[name="record_id"]').value;
+
+  fetch('/api/manager/medical-records/' + recordId, {
+    method: 'DELETE',
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Record deleted:', data);
+    alert('Record deleted successfully');
+    location.reload(); // Reload to show updated list
+  })
+  .catch(error => {
+    console.error('Error deleting record:', error);
+    alert('Error deleting record');
+  });
+});
+
+
+    // Fetch medical records and display
+    // Fetch medical records and display
+fetch('/api/manager/medical-records')
+  .then(res => res.json())
+  .then(data => {
+    const recordsDiv = document.getElementById('medical-records');
+
+    if (data.length === 0) {
+      recordsDiv.innerHTML = '<p>No medical records found.</p>';
+      return;
+    }
+
+    data.forEach(record => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <p><strong>Resident ID:</strong> ${record.resident_id}</p>
+        <p><strong>Diagnosis:</strong> ${record.diagnosis}</p>
+        <p><strong>Checkup Date:</strong> ${record.checkup_date}</p>
+        <p><strong>Doctor ID:</strong> ${record.doctor_id}</p>
+        <hr/>
+      `;
+      recordsDiv.appendChild(div);
+    });
+  })
+  .catch(err => {
+    console.error('Error fetching medical records:', err);
+    document.getElementById('medical-records').innerHTML = '<p>Error loading records.</p>';
+  });
+
+  </script>
+</body>
+</html>

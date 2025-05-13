@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Users</title>
+  <link rel="stylesheet" href="manager.css" />
+  <style>
+    .section { display: none; margin-top: 20px; }
+    .section.active { display: block; }
+    .user-nav button { margin: 5px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔧 Manage Users</h1>
+    <div class="user-nav">
+      <button onclick="showSection('resident')">Residents</button>
+      <button onclick="showSection('staff')">Staff</button>
+      <button onclick="showSection('guardian')">Guardians</button>
+    </div>
+  </header>
+
+  <!-- Resident Management -->
+  <!-- Resident Management -->
+<section id="resident" class="section">
+  <h2>👵 Add Resident</h2>
+  <form id="addResidentForm">
+    <input type="text" name="resident_id" placeholder="Resident ID" required />
+    <input type="text" name="resident_name" placeholder="Resident Name" required />
+    <input type="text" name="resident_gender" placeholder="Gender" required />
+    <input type="number" name="resident_age" placeholder="Age" required />
+    <input type="date" name="admission_date" required />
+    <input type="text" name="caretaker_id" placeholder="Caretaker ID" required />
+    <input type="text" name="resident_username" placeholder="Username" required />
+    <input type="password" name="resident_password" placeholder="Password" required />
+    <button type="submit">Add Resident</button>
+  </form>
+  <ul id="residentList"></ul>
+</section>
+
+
+  <!-- Staff Management -->
+  <!-- Staff Management -->
+<section id="staff" class="section">
+  <h2>👨‍⚕️ Add Staff</h2>
+  <form id="staffForm">
+    <input type="text" name="staff_id" placeholder="Staff ID" required />
+    <input type="text" name="staff_name" placeholder="Name" required />
+    <select name="role" required>
+      <option value="">Role</option>
+      <option>Nurse</option><option>Doctor</option><option>Caretaker</option><option>Cook</option><option>Other</option>
+    </select>
+    <input type="number" step="0.01" name="Staff_Salary" placeholder="Salary" />
+    <select name="shift" required>
+      <option value="">Shift</option>
+      <option>Morning</option><option>Evening</option><option>Night</option>
+    </select>
+    <select name="Staff_gender" required>
+      <option value="">Gender</option>
+      <option>Male</option><option>Female</option><option>Other</option>
+    </select>
+    <input type="text" name="Staff_username" placeholder="Username" required />
+    <input type="password" name="Staff_password" placeholder="Password" required />
+    <input type="number" name="manager_id" placeholder="Manager ID" required />
+    <button type="submit">Add Staff</button>
+  </form>
+  <ul id="staffList"></ul>
+</section>
+
+
+  <!-- Guardian Management -->
+ <!-- Guardian Management -->
+<section id="guardian" class="section">
+  <h2>👪 Add Guardian</h2>
+  <form id="guardianForm">
+    <input type="text" name="guardian_id" placeholder="Guardian ID" required />
+    <input type="text" name="guardian_name" placeholder="Name" required />
+    <input type="text" name="relation" placeholder="Relation" />
+    <input type="text" name="guardian_contactNo" placeholder="Contact No" />
+    <input type="text" name="guardian_address" placeholder="Address" />
+    <input type="text" name="guardian_username" placeholder="Username" required />
+    <input type="password" name="guardian_password" placeholder="Password" required />
+    <input type="number" name="resident_id" placeholder="Resident ID (FK)" required />
+    <button type="submit">Add Guardian</button>
+  </form>
+  <ul id="guardianList"></ul>
+</section>
+
+
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    showSection('resident'); // Default section
+
+    function fetchAndDisplay(type) {
+      fetch(`/api/manager/${type}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById(type + 'List');
+          list.innerHTML = '';
+          if (Array.isArray(data) && data.length > 0) {
+            data.forEach(item => {
+              const li = document.createElement('li');
+              li.textContent = JSON.stringify(item);
+              const delBtn = document.createElement('button');
+              delBtn.textContent = '❌ Delete';
+              delBtn.onclick = () => deleteItem(type, item[`${type}_id`] || item.id);
+              li.appendChild(delBtn);
+              list.appendChild(li);
+            });
+          } else {
+            list.innerHTML = `<li>No ${type} found</li>`;
+          }
+        })
+        .catch(err => {
+          console.error(`Error fetching ${type}:`, err);
+          alert('Error fetching data.');
+        });
+    }
+
+    function deleteItem(type, id) {
+      fetch(`/api/manager/${type}/${id}`, {
+        method: 'DELETE'
+      })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          fetchAndDisplay(type);
+        })
+        .catch(err => console.error(`Error deleting ${type}:`, err));
+    }
+
+    // Add Resident
+    document.getElementById('addResidentForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        resident_id: form.resident_id.value,
+        resident_name: form.resident_name.value,
+        resident_gender: form.resident_gender.value,
+        resident_age: form.resident_age.value,
+        admission_date: form.admission_date.value,
+        caretaker_id: form.caretaker_id.value,
+        resident_username: form.resident_username.value,
+        resident_password: form.resident_password.value,
+      };
+
+      fetch('/api/manager/add-resident', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(msg => {
+          alert(msg.message || 'Resident added.');
+          fetchAndDisplay('resident');
+        });
+    });
+
+    // Add Staff
+    document.getElementById('staffForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        staff: form.staff.value,
+        staff_name: form.staff_name.value,
+        role: form.role.value,
+        Staff_Salary: form.Staff_Salary.value,
+        shift: form.shift.value,
+        Staff_gender: form.Staff_gender.value,
+        Staff_username: form.Staff_username.value,
+        Staff_password: form.Staff_password.value,
+        manager_id: form.manager_id.value
+      };
+
+      fetch('/api/manager/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          fetchAndDisplay('staff');
+        });
+    });
+
+    // Add Guardian
+    document.getElementById('guardianForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        guardian: form.guardian.value,
+        guardian_name: form.guardian_name.value,
+        relation: form.relation.value,
+        guardian_contactNo: form.guardian_contactNo.value,
+        guardian_address: form.guardian_address.value,
+        guardian_username: form.guardian_username.value,
+        guardian_password: form.guardian_password.value,
+        resident_id: form.resident_id.value
+      };
+
+      fetch('/api/manager/guardians', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.text())
+        .then(msg => {
+          alert(msg);
+          fetchAndDisplay('guardian');
+        });
+    });
+
+    // Initial Load
+    window.onload = () => {
+      fetchAndDisplay('resident');
+      fetchAndDisplay('staff');
+      fetchAndDisplay('guardian');
+    };
+  </script>
+</body>
+</html>

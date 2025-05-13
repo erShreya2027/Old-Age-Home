@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Staff</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <header>
+    <h1>👨‍⚕️ All Staff</h1>
+  </header>
+
+  <section>
+    <input type="text" id="searchInput" placeholder="Enter Staff ID" />
+    <button onclick="searchStaff()">Search</button>
+
+    <!-- Update Staff Form -->
+    <h2>Update Staff Information</h2>
+    <form id="updateStaffForm">
+      <input type="number" id="staff_id" placeholder="Staff ID" required />
+      <input type="text" id="staff_name" placeholder="Name" required />
+      <input type="text" id="role" placeholder="Role" required />
+      <input type="number" id="Staff_Salary" placeholder="Salary" required />
+      <input type="text" id="shift" placeholder="Shift" required />
+      <input type="text" id="Staff_gender" placeholder="Gender" required />
+      <input type="text" id="Staff_username" placeholder="Username" required />
+      <input type="text" id="Staff_password" placeholder="Password" required />
+      <button type="submit">Update Staff</button>
+      <div id="message"></div>
+    </form>
+
+    <ul id="staffList"></ul>
+  </section>
+
+  <script>
+    let allStaff = [];
+
+    function renderStaff(staffArray) {
+      const staffList = document.getElementById('staffList');
+      staffList.innerHTML = '';
+
+      staffArray.forEach(staff => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>Staff ID:</strong> ${staff.staff_id} <br>
+          <strong>Name:</strong> ${staff.staff_name} <br>
+          <strong>Role:</strong> ${staff.role} <br>
+          <strong>Salary:</strong> ${staff.Staff_Salary} <br>
+          <strong>Shift:</strong> ${staff.shift} <br>
+          <strong>Gender:</strong> ${staff.Staff_gender} <br>
+          <strong>Username:</strong> ${staff.Staff_username} <br>
+          <strong>Password:</strong> ${staff.Staff_password} <br>
+          <hr>
+        `;
+        staffList.appendChild(listItem);
+      });
+    }
+
+    function searchStaff() {
+      const searchId = document.getElementById('searchInput').value.trim();
+      if (searchId === '') {
+        renderStaff(allStaff);
+        return;
+      }
+
+      const match = allStaff.find(s => s.staff_id == searchId);
+      if (match) {
+        const others = allStaff.filter(s => s.staff_id != searchId);
+        renderStaff([match, ...others]);
+      } else {
+        renderStaff([]);
+        document.getElementById('staffList').innerHTML = '<li>No staff found with that ID.</li>';
+      }
+    }
+
+    // Fetch all staff data on load
+    fetch('http://localhost:3000/api/manager/staff')
+      .then(response => response.json())
+      .then(data => {
+        allStaff = data;
+        renderStaff(allStaff);
+      })
+      .catch(error => {
+        console.error('Error fetching staff:', error);
+      });
+
+    // Handle staff update
+    document.getElementById('updateStaffForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const updatedStaff = {
+        staff_id: parseInt(document.getElementById('staff_id').value),
+        staff_name: document.getElementById('staff_name').value,
+        role: document.getElementById('role').value,
+        Staff_Salary: parseFloat(document.getElementById('Staff_Salary').value),
+        shift: document.getElementById('shift').value,
+        Staff_gender: document.getElementById('Staff_gender').value,
+        Staff_username: document.getElementById('Staff_username').value,
+        Staff_password: document.getElementById('Staff_password').value,
+      };
+
+      fetch('/api/manager/staff/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedStaff),
+      })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('message').textContent = data.message;
+          return fetch('http://localhost:3000/api/manager/staff');
+        })
+        .then(response => response.json())
+        .then(data => {
+          allStaff = data;
+          renderStaff(allStaff);
+        })
+        .catch(error => {
+          document.getElementById('message').textContent = 'Error updating staff.';
+          console.error('Update error:', error);
+        });
+    });
+  </script>
+</body>
+</html>

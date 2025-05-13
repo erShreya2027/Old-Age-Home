@@ -1,0 +1,152 @@
+<!-- public/manager-dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manager Dashboard</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <header>
+    <h1>👨‍💼 Manager Dashboard</h1>
+  </header>
+
+  <section class="dashboard-container">
+    <!-- Card Buttons to View Data -->
+    <div class="card" onclick="location.href='/view-residents'">
+      <h2>👵 View All Residents</h2>
+    </div>
+    <div class="card" onclick="location.href='/view-staff'">
+      <h2>👨‍⚕️ View All Staff</h2>
+    </div>
+    <div class="card" onclick="location.href='/view-guardians'">
+      <h2>👪 View All Guardians</h2>
+    </div>
+    <div class="card" onclick="location.href='/manage-users'">
+      <h2>➕➖ Manage Users</h2>
+    </div>
+    <div class="card" onclick="location.href='/medical-records.html'">
+      <h2>🩺 Manage Medical Records</h2>
+    </div>
+    <div class="card" onclick="location.href='/view-donation'">
+      <h2>🎁 View & Accept Donations</h2>
+    </div>
+    <div class="card" onclick="location.href='/track-inventory'">
+      <h2>📦 Inventory Tracking</h2>
+    </div>
+
+   
+  </section>
+
+  
+
+
+  <!-- Residents Section -->
+ 
+
+  <script>
+    // Fetch and display residents
+    function fetchResidents() {
+      fetch('/api/manager/residents')
+        .then(response => response.json())
+        .then(data => {
+          const residentList = document.getElementById('residentList');
+          residentList.innerHTML = '';
+          data.forEach(resident => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${resident.Resident_name} - ${resident.Resident_email}`;
+            residentList.appendChild(listItem);
+          });
+        })
+        .catch(error => console.error('Error fetching residents:', error));
+    }
+
+    // Fetch and display staff
+    function fetchStaff() {
+      fetch('/api/manager/staff')
+        .then(response => response.json())
+        .then(data => {
+          const staffList = document.getElementById('staffList');
+          staffList.innerHTML = '';
+          data.forEach(staff => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${staff.Staff_name} - ${staff.Staff_email}`;
+            staffList.appendChild(listItem);
+          });
+        })
+        .catch(error => console.error('Error fetching staff:', error));
+    }
+
+    // Fetch and display guardians
+    function fetchGuardians() {
+      fetch('/api/manager/guardians')
+        .then(response => response.json())
+        .then(data => {
+          const guardianList = document.getElementById('guardianList');
+          guardianList.innerHTML = '';
+          data.forEach(guardian => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${guardian.Guardian_name} - ${guardian.Guardian_email}`;
+            guardianList.appendChild(listItem);
+          });
+        })
+        .catch(error => console.error('Error fetching guardians:', error));
+    }
+    document.getElementById('addResidentForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+
+    fetch('/api/manager/residents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        fetchResidents(); // refresh list
+        e.target.reset();
+      });
+  });
+
+  // DELETE Resident
+  function deleteResident(id) {
+    fetch(`/api/manager/residents/${id}`, {
+      method: 'DELETE',
+    })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        fetchResidents();
+      });
+  }
+
+  // Modified fetchResidents to include delete buttons
+  function fetchResidents() {
+    fetch('/api/manager/residents')
+      .then(response => response.json())
+      .then(data => {
+        const residentList = document.getElementById('residentList');
+        residentList.innerHTML = '';
+        data.forEach(resident => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${resident.Resident_name} - ${resident.Resident_email}`;
+
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.onclick = () => deleteResident(resident.Resident_id);
+
+          listItem.appendChild(delBtn);
+          residentList.appendChild(listItem);
+        });
+      });
+  }
+
+  // Load residents on page load
+  fetchResidents();
+    
+  </script>
+</body>
+</html>

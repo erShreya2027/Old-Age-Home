@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Donations</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <header>
+    <h1>💰 Donations List</h1>
+  </header>
+
+  <section>
+    <ul id="donationList"></ul>
+  </section>
+
+  <script>
+    // Fetch data for donations from the backend
+    fetch('http://localhost:3000/api/manager/donations')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Donations fetched:', data); // Check if the data is coming correctly
+        const donationList = document.getElementById('donationList');
+        
+        // If no donations are found
+        if (data.length === 0) {
+          donationList.innerHTML = "<li>No pending donations.</li>";
+        } else {
+          // Loop through each donation and add all their attributes to the list
+          data.forEach(donation => {
+            console.log('Donation:', donation); // Log each donation
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+              <strong>Donation ID:</strong> ${donation.donation_id} <br>
+              <strong>Donor Name:</strong> ${donation.donor_name} <br>
+              <strong>Amount Donated:</strong> ₹${donation.donated_amount} <br>
+              <strong>Purpose:</strong> ${donation.purpose} <br>
+              <strong>Mode of Payment:</strong> ${donation.mode_of_payment} <br>
+              <strong>Status:</strong> <span id="status-${donation.donation_id}">${donation.status}</span> <br> <!-- Display status -->
+              <button id="acceptBtn-${donation.donation_id}" onclick="acceptDonation(${donation.donation_id})">Accept Donation</button>
+              <hr> <!-- Add a separator between donations -->
+            `;
+
+            donationList.appendChild(listItem);
+
+            // If the donation has already been accepted, hide the button
+            if (donation.status === 'Accepted') {
+              document.getElementById(`acceptBtn-${donation.donation_id}`).style.display = 'none';
+            }
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching donations:', error);
+      });
+
+    // Accept a donation
+    function acceptDonation(donationId) {
+      fetch('http://localhost:3000/api/manager/donations/accept', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ donation_id: donationId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Donation accepted:', data);
+        alert('Donation accepted successfully!');
+        
+        // Update the status text on the page without reloading
+        const statusElement = document.getElementById(`status-${donationId}`);
+        statusElement.textContent = 'Accepted';
+
+        // Hide the accept button after donation is accepted
+        const acceptButton = document.getElementById(`acceptBtn-${donationId}`);
+        acceptButton.style.display = 'none';
+      })
+      .catch(error => {
+        console.error('Error accepting donation:', error);
+      });
+    }
+  </script>
+</body>
+</html>

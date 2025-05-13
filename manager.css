@@ -1,0 +1,55 @@
+/* public/manager.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #5B9BD5;
+  padding: 1rem;
+  color: white;
+  text-align: center;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-align: center;
+}
+
+.card:hover {
+  background-color: #eef4fa;
+}
+
+button {
+  padding: 10px;
+  background-color: #5B9BD5;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #4682B4;
+}
+
+ul {
+  list-style-type: none;
+}
+
+li {
+  margin-bottom: 8px;
+}
